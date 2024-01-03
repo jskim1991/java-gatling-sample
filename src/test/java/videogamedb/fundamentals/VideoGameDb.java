@@ -33,14 +33,26 @@ public class VideoGameDb extends Simulation {
 
             .exec(http("Get specific game")
                     .get("/videogame/1")
-                    .check(status().in(200, 201, 202)))
+                    .check(status().in(200, 201, 202))
+                    .check(jmesPath("name").is("Resident Evil 4"))
+            )
             .pause(1, 2)
 
 
-            .exec(http("Get all video games - 2nd call")
+            .exec(http("Get all video games and correlate gameId")
                     .get("/videogame")
-                    .check(status().not(500), status().not(404)))
-            .pause(Duration.ofMillis(200));
+                    .check(status().not(500), status().not(404))
+                    .check(jsonPath("$[1].id").saveAs("gameId"))
+                    .check(jmesPath("length([])").is("10"))
+            )
+            .pause(Duration.ofMillis(200))
+
+
+            .exec(http("Get specific game with saved game ID - #{gameId}")
+                    .get("/videogame/#{gameId}")
+                    .check(jmesPath("name").is("Gran Turismo 3"))
+            )
+            ;
 
 
     {
